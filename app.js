@@ -78,7 +78,7 @@ app.route("/articles")
       .then(() => res.send("Add successfully!"))
       .catch(error => res.send('Add failed!', error));
   })
-  .delete(async function(req, res){
+  .delete(async function (req, res) {
     try {
       const articles = await Article.deleteMany();
       res.send("Delete successfully!");
@@ -87,13 +87,54 @@ app.route("/articles")
     }
   });
 
-//work with a specific resource
+//work with a specific resource (here is name)
+//GET 1
 app.route("/articles/:articleTitle")
-  .get(async function(req, res){
-    await Article.findOne({title: req.params.articleTitle})
-    .then(foundArticle => res.send(foundArticle))
-    .catch(res.send("Cant find!"));
+  .get(async function (req, res) {
+    try {
+      const foundArticle = await Article.findOne({ title: req.params.articleTitle });
+      if (foundArticle) {
+        res.send(foundArticle);
+      } else {
+        res.send("Article not found!");
+      }
+    } catch (error) {
+      res.status(500).send("An error occurred while retrieving the article.");
+    }
   })
+  //Update 1 resouce (with all fields required when input)
+  .put(async function (req, res) {
+    try {
+      await Article.replaceOne(
+        { title: req.params.articleTitle }, // condition
+        { title: req.body.title, content: req.body.content } // updates
+      );
+      res.send("Successfully updated!");
+    } catch (err) {
+      res.status(500).send("Error occurred while updating the article." + err);
+    }
+  })
+  //Update fields (1 or some) of a resource
+  .patch(async function (req, res) {
+    try {
+      await Article.updateOne(
+        { title: req.params.articleTitle },
+        { $set: req.body }
+      );
+      res.send("Successfully update fields!");
+    } catch (err) {
+      res.status(500).send("Error occurred while updating (patch) the article." + err);
+    }
+  })
+  //Delete 1
+  .delete(async function (req, res) {
+    try {
+      const articles = await Article.deleteOne({ title: req.params.articleTitle });
+      res.send("Delete successfully!");
+    } catch (err) {
+      res.send("Delete failed!", err);
+    }
+  });
 
 //TODO
 
